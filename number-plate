@@ -4,7 +4,7 @@ import numpy as np
 import imutils
 import easyocr
 
-img = cv2.imread('car3.jpg')
+img = cv2.imread('car4.jpg')
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 plt.imshow(cv2.cvtColor(gray, cv2.COLOR_BGR2RGB))
 
@@ -42,6 +42,98 @@ plt.imshow(cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB))
 reader = easyocr.Reader(['en'])
 result = reader.readtext(cropped_image)
 result
+
+plate_number = result[0][-2]
+
+
+
+
+plate_number
+
+plate_number = plate_number.replace( ' ', '')
+
+plate_number[6:]
+
+
+plate_number = plate_number.replace('.','')
+
+plate_number
+
+type(plate_number)
+
+import requests
+import xmltodict
+import json
+
+from xml.parsers import expat
+import requests
+import json
+import xmltodict
+
+
+def get_vehicle_info(plate_number):
+    r = requests.get(
+        "http://www.regcheck.org.uk/api/reg.asmx/CheckIndia?RegistrationNumber={0}&username= tiny2450".format(str(plate_number)))
+    data = xmltodict.parse(r.content)
+    jdata = json.dumps(data)
+    df = json.loads(jdata)
+    df1 = json.loads(df['Vehicle']['vehicleJson'])
+    return df1
+
+
+noplate = "MH01CT5470"
+x = get_vehicle_info(noplate)
+print(x)
+
+
+
+
+
+def get_info():
+    import sys
+    import requests
+    from bs4 import BeautifulSoup, SoupStrainer
+
+    home_url = 'https://parivahan.gov.in/rcdlstatus/?pur_cd=102'
+    post_url = 'https://parivahan.gov.in/rcdlstatus/vahan/rcDlHome.xhtml'
+
+    first = 'MH01CT'
+
+    second = '5470'
+
+    r = requests.get(url=home_url)
+    cookies = r.cookies
+    soup = BeautifulSoup(r.text, 'html.parser')
+    viewstate = soup.select('input[name="javax.faces.ViewState"]')[0]['value']
+
+    data = {
+    'javax.faces.partial.ajax':'true',
+    'javax.faces.source': 'form_rcdl:j_idt59',
+    'javax.faces.partial.execute':'@ALL',
+    'javax.faces.partial.render': 'form_rcdl:pnl_show form_rcdl:pg_show form_rcdl:rcdl_pnl',
+    'form_rcdl:j_idt59':'form_rcdl:j_idt59',
+    'form_rcdl':'form_rcdl',
+    'form_rcdl:tf_reg_no1': first,
+    'form_rcdl:tf_reg_no2': second,
+    'javax.faces.ViewState': viewstate,
+    }
+
+    r = requests.post(url=post_url, data=data, cookies=cookies)
+    soup = BeautifulSoup(r.text, 'html.parser')
+    table = SoupStrainer('tr')
+    soup = BeautifulSoup(soup.get_text(), 'html.parser', parse_only=table)
+    print(soup.get_text())
+
+
+get_info()
+
+first = 'MH01CT'
+# The last four digits: 0555
+second = '5470'
+
+
+
+
 
 
 
